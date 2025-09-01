@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: lapa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: lapa/api-gateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: TZ
+              value: Europe/Moscow
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lapa-secrets
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lapa-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: lapa
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: USER_SERVICE_URL
+              value: http://user-service.lapa.svc.cluster.local:8000
+            - name: PET_SERVICE_URL
+              value: http://pet-service.lapa.svc.cluster.local:8000
+            - name: ORDER_SERVICE_URL
+              value: http://order-service.lapa.svc.cluster.local:8000
+            - name: LOCATION_SERVICE_URL
+              value: http://location-service.lapa.svc.cluster.local:8000
+            - name: PAYMENT_SERVICE_URL
+              value: http://payment-service.lapa.svc.cluster.local:8000
+            - name: CHAT_SERVICE_URL
+              value: http://chat-service.lapa.svc.cluster.local:8000
+            - name: MEDIA_SERVICE_URL
+              value: http://media-service.lapa.svc.cluster.local:8000
+            - name: NOTIFICATION_SERVICE_URL
+              value: http://notification-service.lapa.svc.cluster.local:8000
+            - name: ANALYTICS_SERVICE_URL
+              value: http://analytics-service.lapa.svc.cluster.local:8000
+            - name: JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lapa-secrets
+                  key: JWT_SECRET_KEY
+            - name: JWT_ALGORITHM
+              value: HS256
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: lapa
+spec:
+  type: ClusterIP
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway
+  namespace: lapa
+  annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    - host: api.lapa.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 80
