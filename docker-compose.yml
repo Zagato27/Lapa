@@ -1,0 +1,234 @@
+version: '3.9'
+
+x-common-environment: &common-env
+  TZ: ${TZ}
+  POSTGRES_HOST: ${POSTGRES_HOST}
+  POSTGRES_PORT: ${POSTGRES_PORT}
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  POSTGRES_DB: ${POSTGRES_DB}
+  REDIS_HOST: ${REDIS_HOST}
+  REDIS_PORT: ${REDIS_PORT}
+  MONGO_HOST: ${MONGO_HOST}
+  MONGO_PORT: ${MONGO_PORT}
+  MONGO_DB: ${MONGO_DB}
+  USER_SERVICE_URL: ${USER_SERVICE_URL}
+  PET_SERVICE_URL: ${PET_SERVICE_URL}
+  ORDER_SERVICE_URL: ${ORDER_SERVICE_URL}
+  LOCATION_SERVICE_URL: ${LOCATION_SERVICE_URL}
+  PAYMENT_SERVICE_URL: ${PAYMENT_SERVICE_URL}
+  CHAT_SERVICE_URL: ${CHAT_SERVICE_URL}
+  MEDIA_SERVICE_URL: ${MEDIA_SERVICE_URL}
+  NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+  ANALYTICS_SERVICE_URL: ${ANALYTICS_SERVICE_URL}
+
+services:
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  mongo:
+    image: mongo:6
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      TZ: ${TZ}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  api-gateway:
+    build: ./services/api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8080
+      ENABLE_AUTH: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+      - mongo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  user-service:
+    build: ./services/user-service
+    container_name: user-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8001:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  pet-service:
+    build: ./services/pet-service
+    container_name: pet-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8002:8000"
+    depends_on:
+      - postgres
+
+  order-service:
+    build: ./services/order-service
+    container_name: order-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8003:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  location-service:
+    build: ./services/location-service
+    container_name: location-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8004:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: payment-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8005:8000"
+    depends_on:
+      - postgres
+
+  chat-service:
+    build: ./services/chat-service
+    container_name: chat-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8006:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  media-service:
+    build: ./services/media-service
+    container_name: media-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8007:8000"
+    depends_on:
+      - postgres
+      - mongo
+
+  notification-service:
+    build: ./services/notification-service
+    container_name: notification-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8008:8000"
+    depends_on:
+      - postgres
+      - redis
+
+  analytics-service:
+    build: ./services/analytics-service
+    container_name: analytics-service
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      <<: *common-env
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8009:8000"
+    depends_on:
+      - postgres
+      - redis
+      - mongo
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ}
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api-gateway
+
+volumes:
+  postgres_data:
+  redis_data:
+  mongo_data:
