@@ -45,7 +45,7 @@ class MediaAccess(Base):
     __tablename__ = "media_access"
 
     id = Column(String, primary_key=True, index=True)
-    media_file_id = Column(String, ForeignKey("media_files.id"), nullable=False, index=True)
+    media_file_id = Column(String, nullable=False, index=True)
 
     # Тип доступа и уровень
     access_type = Column(Enum(AccessType), nullable=False)
@@ -53,7 +53,7 @@ class MediaAccess(Base):
     status = Column(Enum(AccessStatus), nullable=False, default=AccessStatus.ACTIVE)
 
     # Кому предоставлен доступ
-    user_id = Column(String, ForeignKey("users.id"), nullable=True, index=True)
+    user_id = Column(String, nullable=True, index=True)
     group_id = Column(String, nullable=True)                      # ID группы пользователей
     token = Column(String, nullable=True, unique=True, index=True)  # Токен для публичного доступа
 
@@ -69,12 +69,12 @@ class MediaAccess(Base):
     last_access_at = Column(DateTime, nullable=True)             # Последний доступ
 
     # Создал доступ
-    granted_by = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    granted_by = Column(String, nullable=False, index=True)
     granted_at = Column(DateTime, default=func.now())
 
     # Метаданные
     description = Column(Text, nullable=True)                    # Описание доступа
-    metadata = Column(JSON, nullable=True)                       # Дополнительные данные
+    extra_metadata = Column('metadata', JSON, nullable=True)     # Дополнительные данные
 
     # Временные метки
     created_at = Column(DateTime, default=func.now())
@@ -251,7 +251,7 @@ class MediaAccess(Base):
             "granted_by": self.granted_by,
             "granted_at": self.granted_at.isoformat(),
             "description": self.description,
-            "metadata": self.metadata,
+            "metadata": self.extra_metadata,
             "created_at": self.created_at.isoformat()
         }
 

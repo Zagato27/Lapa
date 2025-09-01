@@ -22,6 +22,7 @@ class UserProfileUpdate(BaseModel):
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
+    hourly_rate: Optional[float] = None
 
 
 class WalkerVerificationRequest(BaseModel):

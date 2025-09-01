@@ -76,6 +76,11 @@ class GatewayService:
             headers = dict(request.headers)
             headers.pop("host", None)  # Удаляем оригинальный host
 
+            # Инъекция идентификатора пользователя из middleware
+            inject = getattr(request.state, 'inject_user_headers', None)
+            if inject and isinstance(inject, dict):
+                headers.update(inject)
+
             # Подготовка тела запроса
             body = None
             if method in ["POST", "PUT", "PATCH"]:

@@ -175,12 +175,16 @@ services:
     container_name: media-service
     restart: unless-stopped
     env_file: .env
+    user: "0:0"
     environment:
       <<: *common-env
       HOST: 0.0.0.0
       PORT: 8000
+      UPLOAD_PATH: /data/media_uploads
     ports:
       - "8007:8000"
+    volumes:
+      - media_uploads:/data/media_uploads
     depends_on:
       - postgres
       - mongo
@@ -232,3 +236,4 @@ volumes:
   postgres_data:
   redis_data:
   mongo_data:
+  media_uploads:

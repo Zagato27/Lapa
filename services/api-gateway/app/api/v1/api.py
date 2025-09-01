@@ -3,7 +3,9 @@
 """
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import Response
 from app.services.gateway_service import GatewayService
+from app.config import settings
 from app.services.auth_service import AuthService
 from app.services.monitoring_service import MonitoringService
 from app.schemas.gateway import GatewayStatsResponse, ServiceHealthResponse
@@ -235,8 +237,19 @@ async def route_to_service(
 ):
     """Маршрутизация запросов к микросервисам"""
     try:
-        # Полная маршрутизация через GatewayService
-        full_path = f"/{service}/{path}"
+        # Полная маршрутизация через GatewayService (добавляем версию API целевого сервиса)
+        full_path = f"/api/{settings.api_version}/{path}"
+
+        # Проставим идентификатор пользователя в заголовки для доверенных внутренних сервисов
+        # Это упростит аутентификацию downstream без повторной валидации JWT
+        if hasattr(request.state, 'user_id') and request.state.user_id:
+            request.headers.__dict__.setdefault('_list', [])
+            # Невозможно мутировать Headers напрямую в FastAPI, поэтому прокинем через state
+            # и учтём это в GatewayService.route_request
+            request.state.inject_user_headers = {
+                'X-User-Id': str(request.state.user_id),
+                'X-User-Role': str(getattr(request.state, 'user_role', '') or '')
+            }
 
         result = await gateway_service.route_request(
             request,
@@ -245,7 +258,13 @@ async def route_to_service(
             request.method
         )
 
-        return result
+        # Проксируем статус и тело ответа downstream сервиса
+        status_code = result.get("status_code", 200)
+        body_text = result.get("body", "")
+        headers = result.get("headers", {})
+        media_type = headers.get("content-type")
+
+        return Response(content=body_text, status_code=status_code, media_type=media_type)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Routing error: {str(e)}")

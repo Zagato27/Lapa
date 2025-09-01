@@ -60,7 +60,7 @@ class MediaFile(Base):
     storage_backend = Column(Enum(StorageBackend), nullable=False, default=StorageBackend.LOCAL)
 
     # Владелец и доступ
-    owner_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(String, nullable=False, index=True)
     is_public = Column(Boolean, default=False)                 # Публичный доступ
     album_id = Column(String, ForeignKey("media_albums.id"), nullable=True, index=True)
 

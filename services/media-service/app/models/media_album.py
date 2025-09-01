@@ -45,11 +45,11 @@ class MediaAlbum(Base):
     status = Column(Enum(AlbumStatus), nullable=False, default=AlbumStatus.ACTIVE)
 
     # Владелец
-    owner_id = Column(String, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id = Column(String, nullable=False, index=True)
 
     # Связанные объекты
-    pet_id = Column(String, ForeignKey("pets.id"), nullable=True, index=True)
-    order_id = Column(String, ForeignKey("orders.id"), nullable=True, index=True)
+    pet_id = Column(String, nullable=True, index=True)
+    order_id = Column(String, nullable=True, index=True)
 
     # Настройки доступа
     is_public = Column(Boolean, default=False)                 # Публичный доступ

@@ -32,17 +32,30 @@ async def get_current_user(
     credentials = Depends(security),
     db: AsyncSession = Depends(get_db)
 ):
-    """Зависимость для получения текущего пользователя"""
-    if not credentials:
+    """Зависимость для получения текущего пользователя.
+
+    Пытаемся взять user_id из request.state (если пришло через gateway-middleware),
+    иначе валидируем JWT из Authorization.
+    """
+    # Сначала пробуем получить user_id из X-заголовка, затем из request.state
+    user_id = request.headers.get('X-User-Id') or getattr(request.state, 'user_id', None)
+    if user_id:
+        return {"user_id": user_id}
+
+    if not credentials or not credentials.credentials:
         raise HTTPException(status_code=401, detail="Токен не предоставлен")
 
-    # Здесь должна быть валидация токена через API Gateway
-    # Пока что просто возвращаем данные из request
-    user_id = getattr(request.state, 'user_id', None)
-    if not user_id:
+    # Fallback: валидация JWT локально (используем тот же jose, что и user-service)
+    try:
+        from jose import jwt
+        from app.config import settings
+        payload = jwt.decode(credentials.credentials, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
+        user_id = payload.get("user_id")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Неверный токен")
+        return {"user_id": user_id}
+    except Exception:
         raise HTTPException(status_code=401, detail="Неверный токен")
-
-    return {"user_id": user_id}
 
 
 @router.post("/upload", response_model=MediaFileResponse, summary="Загрузка файла")

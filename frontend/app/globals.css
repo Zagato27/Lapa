@@ -37,6 +37,10 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-fatboy, inherit); font-style: n
 .nav-link:hover { background: color-mix(in oklab, var(--color-sage) 24%, white); }
 .nav-link:focus-visible { outline: 2px solid var(--color-forest); outline-offset: 2px; border-radius: var(--radius-md); }
 
+/* Links: remove underlines globally */
+a, a:visited { text-decoration: none; }
+a:hover, a:focus { text-decoration: none; }
+
 /* Hero */
 .hero { display: grid; place-items: center; min-height: calc(100vh - 64px - 220px); background: linear-gradient(180deg, var(--color-sand) 0%, #f6efe3 100%); }
 .hero-content { text-align: center; padding: 48px 0; }
@@ -98,6 +102,9 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-fatboy, inherit); font-style: n
 .btn-ghost { padding: 8px 12px; background: transparent; color: var(--color-forest); border: 1px solid transparent; }
 .btn-ghost:hover { background: color-mix(in oklab, var(--color-sage) 18%, white); }
 
+/* Small button modifier for dense layouts */
+.btn.btn-sm, .btn-sm { padding: 10px 12px; font-size: 0.95em; }
+
 /* Icon button */
 .icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: var(--radius-lg); background: var(--color-copper); color: #fff; border: 1px solid color-mix(in oklab, var(--color-copper) 70%, black); box-shadow: var(--shadow-cta); cursor: pointer; }
 .icon-btn:hover { background: color-mix(in oklab, var(--color-copper) 85%, black); }
@@ -122,7 +129,7 @@ h1, h2, h3, h4, h5, h6 { font-family: var(--font-fatboy, inherit); font-style: n
 .footer-title { margin: 0 0 8px; font-size: 16px; color: var(--color-forest); }
 .social-links { display: flex; gap: 12px; }
 .social-links a { color: var(--color-copper); text-decoration: none; font-weight: 600; }
-.social-links a:hover { text-decoration: underline; }
+.social-links a:hover { text-decoration: none; }
 .footer-bottom { border-top: 1px solid rgba(43,47,54,0.08); background: color-mix(in oklab, var(--color-sand) 70%, white); padding: 12px 0; color: color-mix(in oklab, var(--color-charcoal) 70%, white); font-size: 14px; }
 
 

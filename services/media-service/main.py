@@ -11,6 +11,7 @@ from typing import AsyncGenerator
 
 import structlog
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
@@ -102,6 +103,12 @@ def create_application() -> FastAPI:
 
     # API роуты
     app.include_router(api_router, prefix="/api/v1")
+
+    # Статика: локальные файлы из upload_path по пути /media
+    # Убедимся, что директория существует
+    import os
+    os.makedirs(settings.upload_path, exist_ok=True)
+    app.mount("/media", StaticFiles(directory=settings.upload_path), name="media")
 
     @app.get("/health")
     async def health_check():

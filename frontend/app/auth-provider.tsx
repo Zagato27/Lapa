@@ -17,11 +17,11 @@ type User = {
 type AuthContextType = {
   user: User;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   register: (payload: { email: string; password: string; phone: string; first_name: string; last_name: string; role?: string; }) => Promise<void>;
   logout: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-  updateProfile: (payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string }>) => Promise<void>;
+  refreshProfile: () => Promise<any>;
+  updateProfile: (payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string; hourly_rate: number }>) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -62,6 +62,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const resp: LoginResponse = await AuthAPI.login(email, password);
       setTokens(resp.tokens);
       setUser(resp.user as any);
+      return resp.user as any;
     } finally {
       setLoading(false);
     }
@@ -87,10 +88,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProfile = useCallback(async () => {
     const u = await AuthAPI.profile();
-    setUser((u as any)?.user);
+    const nextUser = (u as any)?.user ?? (u as any);
+    setUser(nextUser);
+    return nextUser;
   }, []);
 
-  const updateProfile = useCallback(async (payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string }>) => {
+  const updateProfile = useCallback(async (payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string; hourly_rate: number }>) => {
     const updated = await AuthAPI.updateProfile(payload);
     setUser((updated as any)?.user);
   }, []);

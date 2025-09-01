@@ -78,8 +78,8 @@ class MediaVariant(Base):
     download_count = Column(Integer, default=0)                   # Количество скачиваний
     last_accessed_at = Column(DateTime, nullable=True)            # Последний доступ
 
-    # Метаданные
-    metadata = Column(JSON, nullable=True)                        # Дополнительные метаданные
+    # Метаданные (metadata зарезервировано в SQLAlchemy)
+    extra_metadata = Column('metadata', JSON, nullable=True)      # Дополнительные метаданные
 
     # Временные метки
     created_at = Column(DateTime, default=func.now())
@@ -205,7 +205,7 @@ class MediaVariant(Base):
             "view_count": self.view_count,
             "download_count": self.download_count,
             "last_accessed_at": self.last_accessed_at.isoformat() if self.last_accessed_at else None,
-            "metadata": self.metadata,
+            "metadata": self.extra_metadata,
             "created_at": self.created_at.isoformat(),
             "completed_at": self.completed_at.isoformat() if self.completed_at else None
         }

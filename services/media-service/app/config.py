@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     host: str = os.getenv("HOST", "0.0.0.0")
     port: int = int(os.getenv("PORT", "8000"))
 
+    # JWT настройки (для валидации токенов от API Gateway/User Service)
+    jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "your-secret-key")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+
     # PostgreSQL настройки
     postgres_host: str = os.getenv("POSTGRES_HOST", "localhost")
     postgres_port: int = int(os.getenv("POSTGRES_PORT", "5432"))
@@ -52,7 +56,7 @@ class Settings(BaseSettings):
 
     # Настройки хранения
     storage_backend: str = os.getenv("STORAGE_BACKEND", "local")  # local, s3, cloudinary, imgur
-    upload_path: str = os.getenv("UPLOAD_PATH", "/tmp/media_uploads")
+    upload_path: str = os.getenv("UPLOAD_PATH", "/data/media_uploads")
     temp_path: str = os.getenv("TEMP_PATH", "/tmp/media_temp")
 
     # Максимальные размеры файлов

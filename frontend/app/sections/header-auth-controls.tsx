@@ -7,7 +7,7 @@ export function HeaderAuthControls() {
   return (
     <div style={{ display: 'flex', gap: 12 }}>
       {user ? (
-        <Link className="nav-link" href="/account">Кабинет</Link>
+        <Link className="nav-link" href={user.role === 'walker' ? '/walker' : '/account'}>Кабинет</Link>
       ) : (
         <>
           <Link className="nav-link" href="/login">Войти</Link>

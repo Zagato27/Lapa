@@ -5,7 +5,7 @@ import { useAuth } from '@/app/auth-provider';
 import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
-  const { login, loading } = useAuth();
+  const { login, loading, refreshProfile } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,8 +15,9 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      await login(email, password);
-      router.push('/account');
+      const loggedUser = await login(email, password);
+      const role = loggedUser?.role ?? (await (async () => { try { const u = await refreshProfile(); return u?.role; } catch { return null; } })());
+      router.replace(role === 'walker' ? '/walker' : '/account');
     } catch (e: any) {
       setError(e.message || 'Ошибка входа');
     }

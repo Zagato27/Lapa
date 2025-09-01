@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1.7
 
 ARG NODE_VERSION=20-alpine
+ARG NODE_REGISTRY=node
 
-FROM node:${NODE_VERSION} AS deps
+FROM ${NODE_REGISTRY}:${NODE_VERSION} AS deps
 WORKDIR /app
 COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
 RUN set -eux; \
@@ -11,14 +12,14 @@ RUN set -eux; \
     elif [ -f yarn.lock ]; then yarn install --frozen-lockfile; \
     else npm i; fi
 
-FROM node:${NODE_VERSION} AS builder
+FROM ${NODE_REGISTRY}:${NODE_VERSION} AS builder
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:${NODE_VERSION} AS runner
+FROM ${NODE_REGISTRY}:${NODE_VERSION} AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

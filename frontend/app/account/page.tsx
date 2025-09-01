@@ -24,9 +24,12 @@ export default function AccountPage() {
     }
   }, []);
 
-  // Редирект на /login только после попытки обновления профиля
+  // Редиректы после попытки обновления профиля
   useEffect(() => {
-    if (refreshed && !loading && !user) router.replace('/login');
+    if (refreshed && !loading) {
+      if (!user) router.replace('/login');
+      else if ((user as any)?.role === 'walker') router.replace('/walker');
+    }
   }, [refreshed, loading, user, router]);
 
   if (loading) return <main className="page container"><p>Загрузка...</p></main>;

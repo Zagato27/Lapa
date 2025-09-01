@@ -47,7 +47,7 @@ class MediaTag(Base):
     color = Column(String, nullable=True)                       # HEX цвет тега
 
     # Создал
-    creator_id = Column(String, ForeignKey("users.id"), nullable=True, index=True)
+    creator_id = Column(String, nullable=True, index=True)
 
     # Настройки
     is_public = Column(Boolean, default=True)                   # Публичный тег
@@ -62,8 +62,8 @@ class MediaTag(Base):
     icon_url = Column(String, nullable=True)                    # URL иконки тега
     icon_emoji = Column(String, nullable=True)                  # Эмодзи иконки
 
-    # Метаданные
-    metadata = Column(JSON, nullable=True)                      # Дополнительные данные
+    # Метаданные (переименовано, т.к. metadata зарезервировано SQLAlchemy)
+    extra_metadata = Column('metadata', JSON, nullable=True)    # Дополнительные данные
 
     # Временные метки
     created_at = Column(DateTime, default=func.now())
@@ -170,7 +170,7 @@ class MediaTag(Base):
             "media_count": self.media_count,
             "icon_url": self.icon_url,
             "icon_emoji": self.icon_emoji,
-            "metadata": self.metadata,
+            "metadata": self.extra_metadata,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
             "last_used_at": self.last_used_at.isoformat() if self.last_used_at else None

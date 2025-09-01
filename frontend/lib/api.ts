@@ -101,7 +101,7 @@ export const AuthAPI = {
   async profile() {
     return apiFetch('/api/v1/users/profile', { method: 'GET', auth: true });
   },
-  async updateProfile(payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string }>) {
+  async updateProfile(payload: Partial<{ first_name: string; last_name: string; phone: string; avatar_url: string; bio: string; hourly_rate: number }>) {
     return apiFetch('/api/v1/users/profile', { method: 'PUT', auth: true, body: payload });
   }
 };
@@ -120,6 +120,19 @@ export const OrdersAPI = {
   },
   async update(orderId: string, payload: any) {
     return apiFetch<Order>(`/api/v1/order/orders/${orderId}`, { method: 'PUT', auth: true, body: payload });
+  },
+  // Walker actions (MVP)
+  async pendingForWalker() {
+    return apiFetch<{ orders: Order[]; total: number }>(`/api/v1/order/orders/walker/pending`, { method: 'GET', auth: true });
+  },
+  async confirm(orderId: string) {
+    return apiFetch<Order>(`/api/v1/order/orders/${orderId}/confirm`, { method: 'PUT', auth: true });
+  },
+  async startWalk(orderId: string) {
+    return apiFetch<Order>(`/api/v1/order/orders/${orderId}/start-walk`, { method: 'PUT', auth: true });
+  },
+  async completeWalk(orderId: string) {
+    return apiFetch<Order>(`/api/v1/order/orders/${orderId}/complete-walk`, { method: 'PUT', auth: true });
   }
 };
 
@@ -170,6 +183,29 @@ export const PetsAPI = {
   async delete(petId: string) {
     return apiFetch<{ message: string }>(`/api/v1/pets/${petId}`, { method: 'DELETE', auth: true });
   },
+};
+
+// Media API (upload avatar)
+export type MediaFileResponse = { id?: string; file_url?: string; public_url?: string; thumbnail_url?: string; filename: string };
+export const MediaAPI = {
+  async uploadAvatar(file: File) {
+    const envMedia = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
+    const base = envMedia && typeof envMedia === 'string'
+      ? envMedia.replace(/\/$/, '')
+      : (typeof window !== 'undefined' ? `http://${window.location.hostname}:8007` : '');
+    const url = `${base}/api/v1/files/upload`;
+    const form = new FormData();
+    form.append('file', file);
+    form.append('title', 'avatar');
+    const { access } = getTokens();
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: access ? { 'Authorization': `Bearer ${access}` } as any : undefined,
+      body: form,
+    });
+    if (!res.ok) throw new Error('Ошибка загрузки файла');
+    return (await res.json()) as MediaFileResponse;
+  }
 };
 
 

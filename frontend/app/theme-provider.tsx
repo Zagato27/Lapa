@@ -25,42 +25,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>("light");
 
   useEffect(() => {
-    let cancelled = false;
-    const html = document.documentElement;
-
-    const applyTheme = (lat: number, lon: number) => {
-      const current = decideThemeNow(new Date(), lat, lon);
-      if (!cancelled) {
-        setTheme(current);
-        html.setAttribute('data-theme', current);
-      }
-    };
-
-    // Try geolocation for better accuracy, fallback to default coords
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => applyTheme(pos.coords.latitude, pos.coords.longitude),
-        () => {
-          const { latitude, longitude } = getApproxLocation();
-          applyTheme(latitude, longitude);
-        },
-        { timeout: 3000, maximumAge: 60 * 60 * 1000 }
-      );
-    } else {
-      const { latitude, longitude } = getApproxLocation();
-      applyTheme(latitude, longitude);
-    }
-
-    // Re-evaluate every 15 minutes
-    const id = window.setInterval(() => {
-      const { latitude, longitude } = getApproxLocation();
-      applyTheme(latitude, longitude);
-    }, 15 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      window.clearInterval(id);
-    };
+    // Принудительно светлая тема
+    document.documentElement.setAttribute('data-theme', 'light');
+    setTheme('light');
   }, []);
 
   return <>{children}</>;
