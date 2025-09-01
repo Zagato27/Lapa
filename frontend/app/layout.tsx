@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span style={{ fontFamily: 'var(--font-fatboy)', color: 'var(--color-forest)', fontWeight: 900 }}>О! ЛАПА</span>
             </Link>
             <nav className="site-nav" aria-label="Главная навигация">
-              <Link href="/" className="nav-link">Главная страница</Link>
+              <Link href="/" className="nav-link">Главная</Link>
               <Link href="/services" className="nav-link">Услуги</Link>
               <Link href="/about" className="nav-link">О нас</Link>
               <Link href="/faq" className="nav-link">FAQ</Link>
